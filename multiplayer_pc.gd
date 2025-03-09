@@ -13,6 +13,7 @@ var edelta : float
 
 func _enter_tree() -> void:
 	#set_multiplayer_authority(name.to_int())
+	# NOTE Moved to after setting the location
 	pass
 	
 func _ready() -> void:
