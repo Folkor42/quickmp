@@ -26,7 +26,6 @@ var player_info = {"name": "Name"}
 var players_loaded = 0
 
 func _ready():
-	current_scene = "res://lobby.tscn"
 	game_started = false
 	multiplayer.peer_connected.connect(_on_player_connected)
 	multiplayer.peer_disconnected.connect(_on_player_disconnected)
@@ -58,7 +57,8 @@ func create_game():
 	player_connected.emit(1, player_info)
 
 func host_start() -> void:
-	rpc ("load_game","res://game.tscn")
+	current_scene = "res://game.tscn"
+	rpc ("load_game",current_scene)
 
 func remove_multiplayer_peer():
 	multiplayer.multiplayer_peer = null
@@ -66,16 +66,22 @@ func remove_multiplayer_peer():
 
 @rpc("reliable", "any_peer")
 func request_scene():
-	var sender_id = multiplayer.get_remote_sender_id()
-	print("request_scene() called by player ", sender_id)
-	if multiplayer.is_server():  # ✅ Only the server should send the response
-		print("Server received scene request from player ", sender_id)
-		rpc_id(sender_id, "receive_scene", current_scene)  # ✅ Send scene to client
+	if game_started == false:
+		var sender_id = multiplayer.get_remote_sender_id()
+		print("request_scene() called by player ", sender_id)
+		if multiplayer.is_server():  # ✅ Only the server should send the response
+			print("Server received scene request from player ", sender_id)
+			rpc_id(sender_id, "receive_scene", current_scene)  # ✅ Send scene to client
 
 @rpc("reliable", "authority")
 func receive_scene(scene_path: String):
 	print("Received scene from server: ", scene_path)
-	load_and_change_scene(scene_path)
+	if scene_path != MultiplayerManager.current_scene:
+		print ("NEED TO LOAD NEW SCENE!")
+		MultiplayerManager.current_scene=scene_path
+		#get_tree().change_scene_to_file(MultiplayerManager.current_scene)
+		load_and_change_scene(scene_path)
+		game_started = true
 
 func load_and_change_scene(scene_path: String):
 	var new_scene = load(scene_path)

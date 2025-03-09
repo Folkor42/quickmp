@@ -10,6 +10,7 @@ var players : Array
 
 func _ready() -> void:
 	MultiplayerManager.game_started = false
+	MultiplayerManager.current_scene = "res://lobby.tscn"
 	join_button.pressed.connect ( join_game )
 	host_button.pressed.connect ( host_game )
 	start_button.pressed.connect ( host_start )
@@ -23,9 +24,6 @@ func host_game () -> void:
 	
 func join_game () -> void:
 	MultiplayerManager.join_game()
-	if str(get_tree().current_scene) != MultiplayerManager.current_scene:
-		print ("NEED TO LOAD NEW SCENE!")
-		get_tree().change_scene_to_file(MultiplayerManager.current_scene)
 		
 @rpc func update_players(_new_player_id, _new_player_info = null) -> void:
 	if multiplayer:		
